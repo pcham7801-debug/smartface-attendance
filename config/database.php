@@ -3,11 +3,8 @@
 
 /**
  * --------------------------------------------------------------------------
- * Database Configuration (Local XAMPP & Cloud Hosting like InfinityFree)
+ * Database Configuration (Local XAMPP, Render Docker, & Cloud Hosting)
  * --------------------------------------------------------------------------
- * When running locally on XAMPP, this automatically connects to localhost.
- * When deploying to InfinityFree:
- * Replace the values below with your InfinityFree MySQL details from your control panel:
  */
 // Check if actually running on InfinityFree hosting server
 $is_infinityfree = (
@@ -31,8 +28,8 @@ if ($is_infinityfree) {
     $env_name = trim(getenv('DB_NAME') ?: '');
     $env_port = trim(getenv('DB_PORT') ?: '');
 
-    // If an environment variable is an unresolved template like ${{MySQL.MYSQLHOST}} or empty, fall back to localhost
-    $db_host = (empty($env_host) || strpos($env_host, '${{') !== false) ? 'localhost' : $env_host;
+    // If an environment variable is an unresolved template like ${{MySQL.MYSQLHOST}} or empty or localhost, use 127.0.0.1
+    $db_host = (empty($env_host) || strpos($env_host, '${{') !== false || $env_host === 'localhost') ? '127.0.0.1' : $env_host;
     $db_user = (empty($env_user) || strpos($env_user, '${{') !== false) ? 'root' : $env_user;
     $db_pass = (strpos($env_pass, '${{') !== false) ? '' : $env_pass;
     $db_name = (empty($env_name) || strpos($env_name, '${{') !== false) ? 'smartface_attendance' : $env_name;
@@ -51,13 +48,34 @@ class Database {
 
     private function __construct() {
         try {
-            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
             $options = [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ];
-            $this->conn = new PDO($dsn, DB_USER, DB_PASS, $options);
+
+            // Try standard TCP/IP connection first
+            $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            
+            // Check for Unix socket on Linux container
+            $socket_file = null;
+            if (file_exists('/run/mysqld/mysqld.sock')) {
+                $socket_file = '/run/mysqld/mysqld.sock';
+            } elseif (file_exists('/var/run/mysqld/mysqld.sock')) {
+                $socket_file = '/var/run/mysqld/mysqld.sock';
+            }
+
+            try {
+                $this->conn = new PDO($dsn, DB_USER, DB_PASS, $options);
+            } catch (PDOException $tcpErr) {
+                if ($socket_file) {
+                    $sockDsn = "mysql:unix_socket=" . $socket_file . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+                    $this->conn = new PDO($sockDsn, DB_USER, DB_PASS, $options);
+                } else {
+                    throw $tcpErr;
+                }
+            }
+
             $this->conn->exec("SET time_zone = '+08:00'");
         } catch (PDOException $e) {
             die("Database Connection Error: " . $e->getMessage());
