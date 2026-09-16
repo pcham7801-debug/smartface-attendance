@@ -142,8 +142,13 @@
         csrf_token: csrfToken
       };
 
-      var baseUri = window.location.pathname.replace(/\/auth\/.*$/, '');
-      var response = await fetch(baseUri + '/api/face_login.php', {
+      // Compute clean API path that works on root domain (/), subfolders, or subpages
+      var path = window.location.pathname;
+      var baseDir = path.substring(0, path.lastIndexOf('/'));
+      baseDir = baseDir.replace(/\/(auth|student|admin|api)$/i, '');
+      var apiUrl = '/' + ((baseDir ? baseDir : '') + '/api/face_login.php').replace(/^\/+/, '');
+
+      var response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
