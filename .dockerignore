@@ -1,0 +1,6 @@
+﻿.git
+.gitignore
+.dockerignore
+README.md
+uploads/profiles/*
+!uploads/profiles/.gitkeep
