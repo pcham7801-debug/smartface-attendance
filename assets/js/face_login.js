@@ -53,6 +53,28 @@
     return modelsLoaded;
   }
 
+  const flipBtn        = document.getElementById('btnFaceLoginFlip');
+  let isFlipped = localStorage.getItem('smartface_fliph') !== null 
+    ? (localStorage.getItem('smartface_fliph') === '1') 
+    : true;
+
+  function updateFlip() {
+    if (video) {
+      video.style.transform = isFlipped ? 'scaleX(-1)' : 'scaleX(1)';
+    }
+  }
+  updateFlip();
+
+  if (flipBtn) {
+    flipBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      isFlipped = !isFlipped;
+      localStorage.setItem('smartface_fliph', isFlipped ? '1' : '0');
+      updateFlip();
+    });
+  }
+
   async function startCamera() {
     try {
       videoStream = await navigator.mediaDevices.getUserMedia({
@@ -64,6 +86,7 @@
       });
       video.srcObject = videoStream;
       await video.play();
+      updateFlip();
       return true;
     } catch (err) {
       console.error('Webcam error:', err);

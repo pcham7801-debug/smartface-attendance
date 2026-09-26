@@ -54,9 +54,26 @@ $subjects = $stmt->fetchAll();
 
                 <!-- Camera Container -->
                 <div class="camera-container mb-4" id="attCameraBox" style="display: none;">
+                    <!-- Camera Orientation Controls Toolbar -->
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-dark bg-opacity-75 position-absolute top-0 start-0 w-100 z-3">
+                        <span class="badge bg-secondary-subtle text-white border border-secondary" id="camStatusLabel">
+                            <i class="fa-solid fa-camera me-1"></i> Selfie View
+                        </span>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-sm btn-light py-1 px-2 fw-bold" id="btnFlipH" title="Flip Horizontal (Mirror Left/Right)">
+                                <i class="fa-solid fa-arrows-left-right text-primary me-1"></i> Flip View
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light py-1 px-2" id="btnFlipV" title="Flip Vertical (Upside Down)">
+                                <i class="fa-solid fa-arrows-up-down"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-light py-1 px-2" id="btnRotate" title="Rotate 90 degrees">
+                                <i class="fa-solid fa-rotate"></i>
+                            </button>
+                        </div>
+                    </div>
                     <video id="attVideo" autoplay playsinline muted></video>
                     <canvas id="attCanvas"></canvas>
-                    <div id="attFaceBadge" class="face-status-badge bg-info text-white">Initializing Camera...</div>
+                    <div id="attFaceBadge" class="face-status-badge bg-info text-white" style="top: 50px;">Initializing Camera...</div>
                 </div>
 
                 <div class="text-center">
@@ -91,6 +108,65 @@ document.addEventListener('DOMContentLoaded', () => {
     let faceEngine = null;
     let isVerifying = false;
 
+    // Camera Orientation Controls
+    const btnFlipH = document.getElementById('btnFlipH');
+    const btnFlipV = document.getElementById('btnFlipV');
+    const btnRotate = document.getElementById('btnRotate');
+    const camStatusLabel = document.getElementById('camStatusLabel');
+
+    let flipH = localStorage.getItem('smartface_fliph') !== null 
+        ? (localStorage.getItem('smartface_fliph') === '1') 
+        : true; // default true (selfie mirror)
+    let flipV = localStorage.getItem('smartface_flipv') === '1';
+    let rot = parseInt(localStorage.getItem('smartface_rot') || '0', 10);
+
+    function applyCameraTransform() {
+        let transforms = [];
+        if (rot !== 0) transforms.push(`rotate(${rot}deg)`);
+        transforms.push(flipH ? 'scaleX(-1)' : 'scaleX(1)');
+        if (flipV) transforms.push('scaleY(-1)');
+        
+        const transformStr = transforms.join(' ');
+        video.style.transform = transformStr;
+        canvas.style.transform = transformStr;
+
+        if (camStatusLabel) {
+            let label = flipH ? 'Selfie (Mirrored)' : 'Normal View';
+            if (flipV) label += ' + Flipped V';
+            if (rot !== 0) label += ` (${rot}°)`;
+            camStatusLabel.innerHTML = `<i class="fa-solid fa-camera me-1"></i> ${label}`;
+        }
+    }
+
+    applyCameraTransform();
+
+    if (btnFlipH) {
+        btnFlipH.addEventListener('click', (e) => {
+            e.preventDefault();
+            flipH = !flipH;
+            localStorage.setItem('smartface_fliph', flipH ? '1' : '0');
+            applyCameraTransform();
+        });
+    }
+
+    if (btnFlipV) {
+        btnFlipV.addEventListener('click', (e) => {
+            e.preventDefault();
+            flipV = !flipV;
+            localStorage.setItem('smartface_flipv', flipV ? '1' : '0');
+            applyCameraTransform();
+        });
+    }
+
+    if (btnRotate) {
+        btnRotate.addEventListener('click', (e) => {
+            e.preventDefault();
+            rot = (rot + 90) % 360;
+            localStorage.setItem('smartface_rot', rot.toString());
+            applyCameraTransform();
+        });
+    }
+
     btnStart.addEventListener('click', async () => {
         const subjectId = subjectSelect.value;
         if (!subjectId) {
@@ -107,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             cameraHelper = new CameraHelper(video, canvas);
             await cameraHelper.startCamera();
+            applyCameraTransform();
 
             faceEngine = new FaceRecognitionEngine(video, canvas, badge);
             await faceEngine.loadModels();

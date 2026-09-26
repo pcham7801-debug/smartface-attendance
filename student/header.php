@@ -27,7 +27,7 @@ $studentData = $stmt->fetch();
     <title>Student Portal - SmartFace Attendance</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="<?= baseUrl('assets/css/style.css') ?>" rel="stylesheet">
+    <link href="<?= baseUrl('assets/css/style.css') ?>?v=<?= time() ?>" rel="stylesheet">
     <!-- face-api.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>

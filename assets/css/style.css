@@ -145,13 +145,16 @@ body {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    transform: scaleX(-1);
 }
 
-.camera-container video {
+.camera-container video,
+.camera-container canvas {
     width: 100%;
     height: auto;
     display: block;
+    transform: scaleX(-1);
+    transform-origin: center;
+    transition: transform 0.2s ease;
 }
 
 .camera-container canvas {
@@ -160,6 +163,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
 .face-status-badge {
