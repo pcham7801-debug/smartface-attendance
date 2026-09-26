@@ -142,10 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="position-relative d-inline-block w-100 rounded-3 overflow-hidden shadow-sm bg-dark" style="max-height: 320px;">
-                          <button type="button" id="btnFaceLoginFlip" class="btn btn-sm btn-dark bg-opacity-75 text-white position-absolute top-0 end-0 m-2 rounded-pill shadow-sm" style="font-size: 11px; z-index: 10;">
-                            <i class="fa-solid fa-arrows-left-right me-1 text-info"></i> Flip View
-                          </button>
-                          <video id="videoInput" autoplay muted playsinline style="width: 100%; height: 280px; object-fit: cover; transform: scaleX(-1); transition: transform 0.2s ease;"></video>
+                          <video id="videoInput" autoplay muted playsinline style="width: 100%; height: 280px; object-fit: cover;"></video>
                           
                           <!-- Biometric Scanner Overlay -->
                           <div id="scanOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="pointer-events: none;">
