@@ -142,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <div class="position-relative d-inline-block w-100 rounded-3 overflow-hidden shadow-sm bg-dark" style="max-height: 320px;">
-                          <video id="videoInput" autoplay muted playsinline style="width: 100%; height: 280px; object-fit: cover; transform: scaleX(-1);"></video>
+                          <video id="videoInput" autoplay muted playsinline style="width: 100%; height: 280px; object-fit: cover;"></video>
                           
                           <!-- Biometric Scanner Overlay -->
                           <div id="scanOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="pointer-events: none;">
