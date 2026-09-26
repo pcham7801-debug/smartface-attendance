@@ -151,6 +151,7 @@ body {
     width: 100%;
     height: auto;
     display: block;
+    transform: scaleX(-1);
 }
 
 .camera-container canvas {
