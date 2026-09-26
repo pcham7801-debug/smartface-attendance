@@ -2,6 +2,9 @@
 // student/dashboard.php
 include __DIR__ . '/header.php';
 
+// Guarantee attendance is recorded and preserved upon student session
+recordStudentLoginAttendance($_SESSION['user_id'], 'Student Login');
+
 $studentId = $studentData['student_db_id'];
 $today = date('Y-m-d');
 

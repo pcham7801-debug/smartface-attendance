@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     header('Location: ' . baseUrl('admin/dashboard.php'));
                 } else {
+                    recordStudentLoginAttendance($user['id'], 'User Login');
                     setFlash('success', 'Welcome back, ' . htmlspecialchars($user['first_name']) . '!');
                     header('Location: ' . baseUrl('student/dashboard.php'));
                 }

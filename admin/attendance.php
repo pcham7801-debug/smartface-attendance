@@ -16,10 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_manual_attenda
         $timeIn = $_POST['time_in'] ?? '08:00';
         $timeOut = !empty($_POST['time_out']) ? $_POST['time_out'] : null;
         $status = $_POST['status'] ?? 'Present';
+        $dayName = date('l', strtotime($date));
         $reason = trim($_POST['reason'] ?? '');
+        if (empty($reason)) {
+            $reason = "Manual record by Admin for {$dayName}, " . date('M d, Y', strtotime($date));
+        }
 
-        if ($studentId <= 0 || $subjectId <= 0 || empty($reason)) {
-            $error = 'Please fill in all required fields and provide a reason for manual entry.';
+        if ($studentId <= 0 || $subjectId <= 0 || empty($date)) {
+            $error = 'Please fill in all required fields (Student, Subject, Date).';
         } else {
             try {
                 $stmt = $db->prepare("INSERT INTO attendance (student_id, subject_id, attendance_date, time_in, time_out, status, verification_method, remarks, created_at) 
@@ -27,8 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_manual_attenda
                                       ON DUPLICATE KEY UPDATE time_in = VALUES(time_in), time_out = VALUES(time_out), status = VALUES(status), verification_method = 'Manual Admin', remarks = VALUES(remarks)");
                 $stmt->execute([$studentId, $subjectId, $date, $timeIn, $timeOut, $status, $reason]);
 
-                logAudit('Manual Attendance Override', "Admin manually recorded attendance for Student ID #{$studentId}, Subject #{$subjectId}, Date: {$date}, Status: {$status}. Reason: {$reason}");
-                setFlash('success', 'Manual attendance record added successfully!');
+                logAudit('Manual Attendance Override', "Admin manually recorded attendance for Student ID #{$studentId}, Subject #{$subjectId}, Date: {$date} ({$dayName}), Status: {$status}. Reason: {$reason}");
+                setFlash('success', "Attendance record for {$dayName}, " . date('M d, Y', strtotime($date)) . " saved successfully!");
                 if (!headers_sent()) {
                     header('Location: ' . baseUrl('admin/attendance.php'));
                 }
@@ -61,6 +65,7 @@ if (isset($_GET['delete_id'])) {
 
 // Filters & Data Retrieval
 $dateFilter = $_GET['date'] ?? '';
+$dayFilter = trim($_GET['day'] ?? '');
 $subjectFilter = intval($_GET['subject_id'] ?? 0);
 $statusFilter = $_GET['status'] ?? '';
 $searchFilter = trim($_GET['search'] ?? '');
@@ -79,6 +84,11 @@ $params = [];
 if (!empty($dateFilter)) {
     $sql .= " AND a.attendance_date = ?";
     $params[] = $dateFilter;
+}
+
+if (!empty($dayFilter)) {
+    $sql .= " AND DAYNAME(a.attendance_date) = ?";
+    $params[] = $dayFilter;
 }
 
 if ($subjectFilter > 0) {
@@ -110,12 +120,12 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
 
 <div class="row mb-4">
     <div class="col-md-8">
-        <h3 class="fw-bold text-dark"><i class="fa-solid fa-clipboard-user text-primary me-2"></i> Attendance Logs & Override</h3>
-        <p class="text-muted">Monitor, search, filter, and manually adjust student attendance records</p>
+        <h3 class="fw-bold text-dark"><i class="fa-solid fa-clipboard-user text-primary me-2"></i> Attendance Logs & Records</h3>
+        <p class="text-muted">Record, monitor, search, and manage student class attendance with Date and Day tracking</p>
     </div>
     <div class="col-md-4 text-md-end">
-        <button type="button" class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#manualAttendanceModal">
-            <i class="fa-solid fa-pen me-1"></i> Add Manual Attendance
+        <button type="button" class="btn btn-primary fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#manualAttendanceModal">
+            <i class="fa-solid fa-calendar-plus me-1"></i> Record Attendance
         </button>
     </div>
 </div>
@@ -134,7 +144,7 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
             <div class="col-md-3">
                 <input type="text" name="search" class="form-control" placeholder="Search Student Name / ID..." value="<?= e($searchFilter) ?>">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <select name="subject_id" class="form-select">
                     <option value="0">All Subjects</option>
                     <?php foreach ($subjectsList as $subj): ?>
@@ -145,7 +155,15 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="date" name="date" class="form-control" value="<?= e($dateFilter) ?>">
+                <input type="date" name="date" class="form-control" title="Filter by specific date" value="<?= e($dateFilter) ?>">
+            </div>
+            <div class="col-md-2">
+                <select name="day" class="form-select" title="Filter by day of the week">
+                    <option value="">All Days</option>
+                    <?php foreach (['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as $d): ?>
+                        <option value="<?= $d ?>" <?= $dayFilter === $d ? 'selected' : '' ?>><?= $d ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             <div class="col-md-2">
                 <select name="status" class="form-select">
@@ -156,9 +174,9 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                     <option value="Excused" <?= $statusFilter === 'Excused' ? 'selected' : '' ?>>Excused</option>
                 </select>
             </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="fa-solid fa-filter"></i> Filter</button>
-                <a href="<?= baseUrl('admin/attendance.php') ?>" class="btn btn-outline-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+            <div class="col-md-1 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 fw-bold" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                <a href="<?= baseUrl('admin/attendance.php') ?>" class="btn btn-outline-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
             </div>
         </form>
     </div>
@@ -174,7 +192,7 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                         <th class="ps-3">Student ID</th>
                         <th>Student Name</th>
                         <th>Subject</th>
-                        <th>Date</th>
+                        <th>Date & Day</th>
                         <th>Time In</th>
                         <th>Time Out</th>
                         <th>Status</th>
@@ -184,7 +202,10 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                 </thead>
                 <tbody>
                     <?php if (empty($attendanceLogs)): ?>
-                        <tr><td colspan="9" class="text-center py-4 text-muted">No attendance logs found matching criteria.</td></tr>
+                        <tr><td colspan="9" class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-folder-open fa-2x mb-2 text-secondary d-block"></i>
+                            No attendance records found. Students logging in or manual entries will appear here permanently.
+                        </td></tr>
                     <?php else: ?>
                         <?php foreach ($attendanceLogs as $log): ?>
                             <tr>
@@ -194,8 +215,18 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                                     <small class="text-muted"><?= htmlspecialchars($log['course']) ?> - <?= htmlspecialchars($log['section']) ?></small>
                                 </td>
                                 <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($log['subject_code']) ?></span></td>
-                                <td><?= date('M d, Y', strtotime($log['attendance_date'])) ?></td>
-                                <td><?= date('h:i A', strtotime($log['time_in'])) ?></td>
+                                <td>
+                                    <div class="fw-bold text-dark"><?= date('M d, Y', strtotime($log['attendance_date'])) ?></div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold">
+                                        <i class="fa-regular fa-calendar-days me-1"></i><?= date('l', strtotime($log['attendance_date'])) ?>
+                                    </span>
+                                    <?php if (!empty($log['remarks'])): ?>
+                                        <div class="small text-muted text-truncate mt-1" style="max-width: 180px;" title="<?= htmlspecialchars($log['remarks']) ?>">
+                                            <i class="fa-solid fa-note-sticky me-1 text-secondary"></i><?= htmlspecialchars($log['remarks']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td><span class="badge bg-light text-dark border"><i class="fa-regular fa-clock me-1 text-muted"></i><?= date('h:i A', strtotime($log['time_in'])) ?></span></td>
                                 <td>
                                     <?php if ($log['signout_status'] === 'pending'): ?>
                                         <div class="fw-bold text-dark"><?= date('h:i A', strtotime($log['time_out'])) ?></div>
@@ -244,16 +275,16 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
 <!-- Manual Attendance Modal -->
 <div class="modal fade" id="manualAttendanceModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
+        <div class="modal-content border-0 rounded-4 shadow">
             <form action="" method="POST">
                 <input type="hidden" name="csrf_token" value="<?= generateCsrfToken() ?>">
                 <input type="hidden" name="action_manual_attendance" value="1">
 
-                <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-pen me-2"></i> Add Manual Attendance</h5>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-calendar-plus me-2"></i> Record Student Class Attendance</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body pt-3">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Select Student <span class="text-danger">*</span></label>
                         <select name="student_id" class="form-select" required>
@@ -280,8 +311,11 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
-                            <input type="date" name="attendance_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                            <label class="form-label fw-bold">Attendance Date <span class="text-danger">*</span></label>
+                            <input type="date" id="modal_att_date" name="attendance_date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                            <div class="mt-1 small fw-bold text-primary" id="modal_day_preview">
+                                <i class="fa-solid fa-calendar-day me-1"></i> Day: <span id="modal_day_name"><?= date('l') ?></span>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
@@ -297,22 +331,23 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Time In <span class="text-danger">*</span></label>
-                            <input type="time" name="time_in" class="form-control" value="08:00" required>
+                            <input type="time" name="time_in" class="form-control" value="<?= date('H:i') ?>" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Time Out</label>
-                            <input type="time" name="time_out" class="form-control" value="10:00">
+                            <input type="time" name="time_out" class="form-control" placeholder="Optional">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Reason for Manual Adjustment <span class="text-danger">*</span></label>
-                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Excused absence due to medical note, manual check-in by admin..." required></textarea>
+                        <label class="form-label fw-bold">Remarks / Reason</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Attended class on Saturday, excused note, manual entry..."></textarea>
+                        <div class="form-text">If left empty, system automatically saves as 'Manual record by Admin for [Day], [Date]'.</div>
                     </div>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-bold px-4">Save Record</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4"><i class="fa-solid fa-check me-1"></i> Save Attendance Record</button>
                 </div>
             </form>
         </div>
@@ -321,6 +356,21 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    // Dynamic Day of Week indicator for Modal
+    const dateInput = document.getElementById('modal_att_date');
+    const daySpan = document.getElementById('modal_day_name');
+    if (dateInput && daySpan) {
+        dateInput.addEventListener('change', () => {
+            if (dateInput.value) {
+                const parts = dateInput.value.split('-');
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                daySpan.textContent = days[d.getDay()];
+            }
+        });
+    }
+
+    // Quick Sign-out action handlers
     document.querySelectorAll('.btn-quick-signout').forEach(btn => {
         btn.addEventListener('click', async () => {
             const attendanceId = btn.dataset.id;

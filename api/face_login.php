@@ -162,6 +162,11 @@ try {
         "Student {$user['username']} ({$user['first_name']} {$user['last_name']}) verified successfully as account owner via face scan (Distance: " . round($distance, 4) . ")."
     );
 
+    // Automatically record and permanently preserve attendance upon student face login
+    if ($user['role'] === 'student') {
+        recordStudentLoginAttendance($user['id'], 'Face Login');
+    }
+
     $redirect = ($user['role'] === 'admin')
         ? baseUrl('admin/dashboard.php')
         : baseUrl('student/dashboard.php');

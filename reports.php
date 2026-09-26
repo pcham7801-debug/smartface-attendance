@@ -138,7 +138,7 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                         <th>Course & Section</th>
                         <th>Subject Code</th>
                         <th>Subject Name</th>
-                        <th>Date</th>
+                        <th>Date & Day</th>
                         <th>Time In</th>
                         <th>Time Out</th>
                         <th>Status</th>
@@ -156,7 +156,12 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                                 <td><?= htmlspecialchars($row['course']) ?> - <?= htmlspecialchars($row['year_level']) ?> (<?= htmlspecialchars($row['section']) ?>)</td>
                                 <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($row['subject_code']) ?></span></td>
                                 <td><?= htmlspecialchars($row['subject_name']) ?></td>
-                                <td><?= date('M d, Y', strtotime($row['attendance_date'])) ?></td>
+                                <td>
+                                    <div class="fw-bold text-dark"><?= date('M d, Y', strtotime($row['attendance_date'])) ?></div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold">
+                                        <i class="fa-regular fa-calendar-days me-1"></i><?= date('l', strtotime($row['attendance_date'])) ?>
+                                    </span>
+                                </td>
                                 <td><?= date('h:i A', strtotime($row['time_in'])) ?></td>
                                 <td><?= $row['time_out'] ? date('h:i A', strtotime($row['time_out'])) : 'N/A' ?></td>
                                 <td>

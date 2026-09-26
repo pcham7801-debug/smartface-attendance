@@ -103,7 +103,7 @@ $enrolledSubjects = $stmt->fetchAll();
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-3">Date</th>
+                        <th class="ps-3">Date & Day</th>
                         <th>Subject Code</th>
                         <th>Subject Name</th>
                         <th>Time In</th>
@@ -120,7 +120,12 @@ $enrolledSubjects = $stmt->fetchAll();
                     <?php else: ?>
                         <?php foreach ($history as $row): ?>
                             <tr>
-                                <td class="ps-3 fw-semibold"><?= date('M d, Y', strtotime($row['attendance_date'])) ?></td>
+                                <td class="ps-3">
+                                    <div class="fw-bold text-dark"><?= date('M d, Y', strtotime($row['attendance_date'])) ?></div>
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-semibold">
+                                        <i class="fa-regular fa-calendar-days me-1"></i><?= date('l', strtotime($row['attendance_date'])) ?>
+                                    </span>
+                                </td>
                                 <td class="fw-bold text-primary"><?= htmlspecialchars($row['subject_code']) ?></td>
                                 <td><?= htmlspecialchars($row['subject_name']) ?></td>
                                 <td><?= date('h:i A', strtotime($row['time_in'])) ?></td>
