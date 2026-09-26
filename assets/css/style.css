@@ -145,13 +145,13 @@ body {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: scaleX(-1);
 }
 
 .camera-container video {
     width: 100%;
     height: auto;
     display: block;
-    transform: scaleX(-1);
 }
 
 .camera-container canvas {
