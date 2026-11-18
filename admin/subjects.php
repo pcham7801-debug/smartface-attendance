@@ -158,12 +158,14 @@ $subjects = $stmt->fetchAll();
                                     <span class="badge <?= $subj['status'] === 'active' ? 'bg-success' : 'bg-secondary' ?>"><?= ucfirst($subj['status']) ?></span>
                                 </td>
                                 <td class="text-end pe-3">
-                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal<?= $subj['id'] ?>" title="Edit Subject">
-                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    <div class="d-inline-flex gap-1">
+                                    <button type="button" class="btn btn-action btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal<?= $subj['id'] ?>" title="Edit Subject">
+                                        <i class="fa-solid fa-pen-to-square fa-fw"></i>
                                     </button>
-                                    <a href="?delete_id=<?= $subj['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this subject and all its attendance records?')" title="Delete Subject">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <a href="?delete_id=<?= $subj['id'] ?>" class="btn btn-action btn-outline-danger" onclick="return confirm('Delete this subject and all its attendance records?')" title="Delete Subject">
+                                        <i class="fa-solid fa-trash fa-fw"></i>
                                     </a>
+                                    </div>
 
                                     <!-- Edit Subject Modal -->
                                     <div class="modal fade text-start" id="editModal<?= $subj['id'] ?>" tabindex="-1">
