@@ -91,9 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let faceEngine = null;
     let isVerifying = false;
 
-    video.style.transform = 'none';
-    canvas.style.transform = 'none';
-
+    // Mirror video for natural selfie view (CSS handles this, do NOT override with JS)
     btnStart.addEventListener('click', async () => {
         const subjectId = subjectSelect.value;
         if (!subjectId) {
