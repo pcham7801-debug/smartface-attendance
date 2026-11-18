@@ -99,6 +99,25 @@ body {
     flex: 1;
 }
 
+/* Uniform action buttons in tables */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.btn-action i {
+    font-size: 0.8rem;
+    width: 1em;
+    text-align: center;
+}
+
 /* Dashboard Cards */
 .stat-card {
     border: none;

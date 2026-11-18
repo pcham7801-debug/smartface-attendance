@@ -249,17 +249,17 @@ $subjectsList = $db->query("SELECT id, subject_code, subject_name FROM subjects 
                                 </td>
                                 <td><small class="text-muted"><i class="fa-solid fa-camera me-1"></i> <?= htmlspecialchars($log['verification_method']) ?></small></td>
                                 <td class="text-end pe-3">
-                                    <div class="btn-group">
+                                    <div class="d-inline-flex gap-1">
                                         <?php if ($log['signout_status'] === 'pending'): ?>
-                                            <button type="button" class="btn btn-sm btn-success fw-bold btn-quick-signout" data-id="<?= $log['id'] ?>" data-action="approve" title="Approve Sign Out">
-                                                <i class="fa-solid fa-check"></i>
+                                            <button type="button" class="btn btn-action btn-success btn-quick-signout" data-id="<?= $log['id'] ?>" data-action="approve" title="Approve Sign Out">
+                                                <i class="fa-solid fa-check fa-fw"></i>
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-outline-warning fw-bold btn-quick-signout" data-id="<?= $log['id'] ?>" data-action="reject" title="Reject Sign Out">
-                                                <i class="fa-solid fa-xmark"></i>
+                                            <button type="button" class="btn btn-action btn-outline-warning btn-quick-signout" data-id="<?= $log['id'] ?>" data-action="reject" title="Reject Sign Out">
+                                                <i class="fa-solid fa-xmark fa-fw"></i>
                                             </button>
                                         <?php endif; ?>
-                                        <a href="?delete_id=<?= $log['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this attendance record?')" title="Delete Record">
-                                            <i class="fa-solid fa-trash"></i>
+                                        <a href="?delete_id=<?= $log['id'] ?>" class="btn btn-action btn-outline-danger" onclick="return confirm('Delete this attendance record?')" title="Delete Record">
+                                            <i class="fa-solid fa-trash fa-fw"></i>
                                         </a>
                                     </div>
                                 </td>

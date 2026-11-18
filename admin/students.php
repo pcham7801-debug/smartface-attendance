@@ -264,21 +264,23 @@ $students = $stmt->fetchAll();
                                     </a>
                                 </td>
                                 <td class="text-end pe-3">
-                                    <a href="<?= baseUrl('admin/student_view.php?id=' . $stu['student_db_id']) ?>" class="btn btn-sm btn-outline-info" title="View Profile">
-                                        <i class="fa-solid fa-eye"></i>
+                                    <div class="d-inline-flex gap-1">
+                                    <a href="<?= baseUrl('admin/student_view.php?id=' . $stu['student_db_id']) ?>" class="btn btn-action btn-outline-info" title="View Profile">
+                                        <i class="fa-solid fa-eye fa-fw"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#enrollModal<?= $stu['student_db_id'] ?>" title="Assign Subjects">
-                                        <i class="fa-solid fa-book-medical"></i>
+                                    <button type="button" class="btn btn-action btn-outline-success" data-bs-toggle="modal" data-bs-target="#enrollModal<?= $stu['student_db_id'] ?>" title="Assign Subjects">
+                                        <i class="fa-solid fa-book-medical fa-fw"></i>
                                     </button>
-                                    <a href="<?= baseUrl('admin/face_registration.php?student_id=' . $stu['student_db_id']) ?>" class="btn btn-sm btn-outline-primary" title="Register Face">
-                                        <i class="fa-solid fa-camera"></i>
+                                    <a href="<?= baseUrl('admin/face_registration.php?student_id=' . $stu['student_db_id']) ?>" class="btn btn-action btn-outline-primary" title="Register Face">
+                                        <i class="fa-solid fa-camera fa-fw"></i>
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetModal<?= $stu['id'] ?>" title="Reset Password">
-                                        <i class="fa-solid fa-key"></i>
+                                    <button type="button" class="btn btn-action btn-outline-warning" data-bs-toggle="modal" data-bs-target="#resetModal<?= $stu['id'] ?>" title="Reset Password">
+                                        <i class="fa-solid fa-key fa-fw"></i>
                                     </button>
-                                    <a href="?delete_id=<?= $stu['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this student account? All logs and enrollment records will be removed.')">
-                                        <i class="fa-solid fa-trash"></i>
+                                    <a href="?delete_id=<?= $stu['id'] ?>" class="btn btn-action btn-outline-danger" onclick="return confirm('Are you sure you want to delete this student account? All logs and enrollment records will be removed.')">
+                                        <i class="fa-solid fa-trash fa-fw"></i>
                                     </a>
+                                    </div>
 
                                     <!-- Quick Enroll Subjects Modal -->
                                     <div class="modal fade text-start" id="enrollModal<?= $stu['student_db_id'] ?>" tabindex="-1">
